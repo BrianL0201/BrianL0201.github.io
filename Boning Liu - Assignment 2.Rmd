@@ -1,0 +1,85 @@
+---
+title: '<font size = 7 color = "blue">HTML Presentations </font>'
+subtitle: '<font size = 6 color = "blue">Data: x03 </font>'
+author: '<font size = 6 color = "blue">Boning Liu </font>'
+institute: '<!--img src = "https://www.wcupa.edu/communications/images/mainLogo1.png" width="130" height="100"--><br><font size = 6 color = "purple">West Chester University of Pennsylvania</font><br> '
+date: '<font color = "blue" size =6> 09/25/2022 </font> <br> <font color = "blue" size = 6> STA 490: Capstone Statistics </font> <br> <br> <font color = "white" size = 5> '
+output:
+  xaringan::moon_reader:
+    #yolo: true  #randomly insert new slides with background image of Karl’s mustache photo into existing slides
+    lib_dir: libs
+    self_contained: true
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: true
+      #titleSlideClass: [center, middle, inverse]  # default set up of the title page
+      #titleSlideClass: [top, left, inverse]
+      #autoplay: 30000     # This sets autoplay, 30000 = 10 seconds
+      #countdown: 30000    # The timer will count down to 00:00 then continue with red time
+---
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+##
+if(!require('xaringan')) {
+  remotes::install_github("yihui/xaringan")
+  library('xaringan')
+}
+if (!require("knitr")) {
+   install.packages("knitr")
+   library(knitr)
+}
+if (!require("leaflet")) {
+   install.packages("leaflet")
+   library(leaflet)
+}
+if (!require("ggplot2")) {
+    install.packages("ggplot2")
+    library(ggplot2)
+}
+if (!require("dplyr")) {
+    install.packages("dplyr")
+    library(dplyr)
+}
+if (!require("broom")) {
+    install.packages("broom")
+    library(broom)
+}
+if (!require("ggpubr")) {
+    install.packages("ggpubr")
+    library(ggpubr)
+}
+# remotes::install_github("yihui/xaringan")
+```
+class: middle
+
+## <center>Data </center>
+```{r}
+x03 = read.table("https://people.sc.fsu.edu/~jburkardt/datasets/regression/x03.txt", skip = 36)
+names(x03) = c("Index", "One", "Age", "Systolic Blood Pressure")
+names(x03) = c("I", "A1", "A2", "B")
+```
+
+---
+class: middle
+## Data Table
+```{r}
+kable(x03)
+```
+
+---
+
+## Histogram For Normality Check
+```{r}
+hist(x03$B)
+```
+---
+
+## Building the Model
+```{r}
+Model <- lm(B ~ A2, data = x03)
+summary(Model)
+```
+---
+## Interpretation
+From our model, we have a linear regression B = 0.97A2 + 98.71. The model has a multiple r-squared value of 0.432. This means that our model explains 43.2% of the variation within systolic blood pressure. This means that age helps to explain some of the variation, but not as much as we would like.
