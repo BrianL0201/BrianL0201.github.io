@@ -1,9 +1,9 @@
 ---
-title: '<font size = 7 color = "blue">HTML Presentations </font>'
-subtitle: '<font size = 6 color = "blue">Data: x03 </font>'
-author: '<font size = 6 color = "blue">Boning Liu </font>'
+title: '<font size = 7 color = "red">Age and Blood Pressure </font>'
+subtitle: '<font size = 6 color = "skyblue">Data: x03 </font>'
+author: '<font size = 6 color = "skyblue">Boning Liu </font>'
 institute: '<!--img src = "https://www.wcupa.edu/communications/images/mainLogo1.png" width="130" height="100"--><br><font size = 6 color = "purple">West Chester University of Pennsylvania</font><br> '
-date: '<font color = "blue" size =6> 09/25/2022 </font> <br> <font color = "blue" size = 6> STA 490: Capstone Statistics </font> <br> <br> <font color = "white" size = 5> '
+date: '<font color = "skyblue" size =6> 10/02/2022 </font> <br> <font color = "skyblue" size = 6> STA 490: Capstone Statistics </font> <br> <br> <font color = "white" size = 5> '
 output:
   xaringan::moon_reader:
     #yolo: true  #randomly insert new slides with background image of Karl’s mustache photo into existing slides
@@ -53,33 +53,59 @@ if (!require("ggpubr")) {
 ```
 class: middle
 
+## <center>Research Question </center>
+Does age significantly affect the level of human blood pressure? Meaning if someone is young, should they be expected with lower blood pressure than someone who is older?
+
+---
+class: middle
+
 ## <center>Data </center>
 ```{r}
 x03 = read.table("https://people.sc.fsu.edu/~jburkardt/datasets/regression/x03.txt", skip = 36)
 names(x03) = c("Index", "One", "Age", "Systolic Blood Pressure")
-names(x03) = c("I", "A1", "A2", "B")
+names(x03) = c("I", "A1", "Age", "BloodPressure")
 ```
+Here I named my independent variable "Age", and my response variable "BloodPressure" for clarification. A1 is a categorical variable.
 
 ---
 class: middle
-## Data Table
+## <center>Data Table </center>
 ```{r}
 kable(x03)
 ```
 
 ---
-
-## Histogram For Normality Check
+class: middle
+## <center>Histogram for Normality Check </center>
 ```{r}
-hist(x03$B)
+hist(x03$BloodPressure)
 ```
 ---
-
-## Building the Model
+class: middle
+From the histogram, despite the graph being slightly skewed to the right, we can still assume the data to have a normal distribution. We will build the model in the following step.
+---
+## <center>Building the Model </center>
 ```{r}
-Model <- lm(B ~ A2, data = x03)
+Model <- lm(BloodPressure ~ Age, data = x03)
 summary(Model)
 ```
 ---
-## Interpretation
-From our model, we have a linear regression B = 0.97A2 + 98.71. The model has a multiple r-squared value of 0.432. This means that our model explains 43.2% of the variation within systolic blood pressure. This means that age helps to explain some of the variation, but not as much as we would like.
+class: middle
+## <center>Interpretation </center>
+Linear regression Model: Blood Pressure = 0.97*Age + 98.71. 
+
+Residuals: Difference between actual values and the predicted values. Having our median value to be around 0 would tell us our residuals were somewhat symmetrical.
+
+Coefficients - t value: Simply the coefficient divided by the standard error. In our case, the Age coefficient is 4.618 standard erros away from zero.
+
+Coefficients - p value: In practice, any p-value below 0.05 is usually deemed as significant. In our case, our p-value is less than 0.05, which means it is significant.
+
+Multiple R-squared value: Since we only have one independent variable, we will be using the Multiple R-squared value. In our case, it is 0.432. This means that our model explains 43.2% of the variation within systolic blood pressure.
+---
+class: middle
+## <center>Conclusion </center>
+Age explains certain proportion of one's blood pressure, but it does not explain as much as we would think. 
+
+There are other factors such as one's weight, height, what they consume for food, and other factors that affect one's health being in play to determine a person's blood pressure. 
+
+The issue with the data is that we were provided with only one independent variable to see the relationship between age and blood pressure. Having more than one factor could potentially improve the model.
