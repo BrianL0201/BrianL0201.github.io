@@ -1,0 +1,230 @@
+---
+title: "Survey Analysis Report"
+author: "Boning Liu"
+date: "2022-11-21"
+output: html_document
+---
+```{=html}
+<style type="text/css">
+
+div#TOC li {
+    list-style:none;
+    background-image:none;
+    background-repeat:none;
+    background-position:0;
+}
+h1.title {
+  font-size: 24px;
+  color: DarkRed;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+
+h1 { /* Header 3 - and the author and data headers use this too  */
+    font-size: 20px;
+    font-family: "Times New Roman", Times, serif;
+    color: darkred;
+    text-align: center;
+}
+h2 { /* Header 3 - and the author and data headers use this too  */
+    font-size: 18px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+}
+
+h3 { /* Header 3 - and the author and data headers use this too  */
+    font-size: 16px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+}
+
+</style>
+```
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(GPArotation)
+library(psych)
+library(nFactors)
+library(rmarkdown)
+library(knitr)
+library(parameters)
+library(corrplot)
+library(ggcorrplot)
+library(ggfortify)
+require(ggplot2)
+require(GGally) 
+require(CCA)
+require(olsrr)
+require(cocron)
+opts_chunk$set(echo = TRUE, warning=FALSE, results =TRUE)
+```
+
+```{r}
+survey = read.csv("w09-SurveyDataCsvFinal.csv", head = TRUE)
+# names(survey)
+```
+
+```{r}
+my.mode = function(dataset){
+  freq.tbl = table(dataset)
+  max.freq.id=which(freq.tbl==max(freq.tbl))
+  mode=names(freq.tbl[max.freq.id])
+  as.numeric(mode)
+}
+```
+
+```{r}
+compassion = survey[, 1:12]
+# imputing with the mode in each survey item
+for (i in 1:12) {
+  compassion[,i][is.na(compassion[,i])]=my.mode(compassion[,i])
+}
+```
+
+```{r}
+gratitude = survey[, 13:18]
+# imputing with the mode in each survey item
+for (i in 1:6) {
+  gratitude[,i][is.na(gratitude[,i])]=my.mode(gratitude[,i])
+}
+```
+
+```{r}
+gratitude.new = gratitude
+gratitude.new$Q3_3 = 8-gratitude$Q3_3
+gratitude.new$Q3_6 = 8-gratitude$Q3_6
+```
+
+```{r}
+demographic = survey[, -(1:18)]
+demographic00=demographic
+# replace missing values with 99.
+demographic00[is.na(demographic00)] <- 99  
+# Create a frequency table for collapsing categories
+#list(Q8.1=table(demographic00$Q8_1),
+#     Q8.2=table(demographic00$Q8_2),
+#     Q8.3=table(demographic00$Q8_3),
+#     Q8.5=table(demographic00$Q8_5),
+#     Q8.6=table(demographic00$Q8_6),
+#     Q.20=table(demographic00$Q20)
+#     Q9=table(demographic00$Q9)
+#     Q11=table(demographic00$Q11)
+#     Q13=table(demographic00$Q13)
+#     Q14=table(demographic00$Q14)
+#     Q15=table(demographic00$Q15)
+#     Q16=table(demographic00$Q16)
+#     Q17=table(demographic00$Q17)
+#     Q18=table(demographic00$Q18)
+#     Q19=table(demographic00$Q19)
+#     )
+```
+
+```{ }
+grp.age = Q8_1:  1 = (3,23], 2 = [24, 30],  3 = [31, 59]
+grp.edu = Q8_2:    1 = [0,15] associate, 2 = [15.5,18.5] bachelor, 3 = [19, 25]  advdegree
+grp.empl = Q8_3:   1 = [0,5]  entry, 2 = [5.5,10] junior, 3 = [10.5, 35]   senior
+kid.num = Q8_5: 1 = (0) No child, 2 = at least one child
+home.size = Q8_6:  1 = (1), 2 = (2), 3 = 3 or more
+grp.gender = Q9: 1 = (1) Male, 2 = (2) Female, 3 = [3,7] Others
+grp.race = Q11: 1 = (1) White, 2 = (2) Black, 3 = (5) Hispanic
+mari.st = Q13: 1 = (1) Single, 2 = (2) Married, 3 = [3,4] Divorced/Separated, 4 = (6) Partner
+grp.dsb = Q14: 1 = (1) Yes, 2 = (2) No
+grp.reli = Q15: 1 = [1,3] Christian, 2 = (6) Hindu, 3 = (7) Buddhist, 4 = [9,99] Others
+sex.orient = Q16: 1 = [1,3] Gay/Lesbian, 2 = (4) Straight, 3 = [5,10] Others
+poli.affil = Q17: 1 = [1,3] Republican, 2 = (4) Independent, 3 = [5,7] Democrat, 4 = (99) Other
+sw.program = Q18: 1 = (1), 2 = (2), 3 = (99)
+grp.urb = Q19: 1 = (1) Urban, 2 = (2) Rural, 3 = (3) Suburban/small town
+
+Spirituality = Q20: 1 = (1,2,3) low, 2 = (4)   moderate,  3 = (5,6,7) high
+```
+
+```{r}
+Q8.1=demographic00$Q8_1
+grp.age=cut(Q8.1, breaks=c(1, 23, 30, 100), labels=c("[1,23]", "[24,30]", "[30,99]"))
+#
+Q8.2=demographic00$Q8_2
+grp.edu=cut(Q8.2, breaks=c(0, 15.5, 19, 100), labels=c("Assoc", "Bachelor", "Adv.deg"))
+#
+Q8.3=demographic00$Q8_3
+grp.empl=cut(Q8.3, breaks=c(-1,5, 9, 100), labels=c("entry", "junior", "senior"))
+#
+Q8.5=demographic00$Q8_5
+kid.num=cut(Q8.5, breaks=c(-1,1,100), labels=c("No-kid", "With-kid"))
+#
+Q8.6=demographic00$Q8_6
+home.size=cut(Q8.6, breaks=c(-1,2,100), labels=c("1-2", "3+"))
+#
+Q9=demographic00$Q9
+grp.gender=cut(Q9, breaks=c(0,1,2,7), labels=c("Male", "Female", "Others"))
+#
+Q11=demographic00$Q11
+grp.race=cut(Q11, breaks=c(0,1,2,5), labels=c("Black", "White", "Hispanic"))
+#
+Q13=demographic00$Q13
+mari.st=cut(Q13, breaks=c(0,1,2,4,6), labels=c("Single", "Married", "Divorced/Separated", "Partner"))
+#
+Q14=demographic00$Q14
+grp.dsb=cut(Q14, breaks=c(0,1,2), labels=c("Yes", "No"))
+#
+Q15=demographic00$Q15
+grp.reli=cut(Q15, breaks=c(0,3,6,7,99), labels=c("Christian", "Hindu", "Buddhist", "Others(including Atheist)"))
+#
+Q16=demographic00$Q16
+sex.orient=cut(Q16, breaks=c(0,3,4,10), labels=c("Gay/Lesbian", "Straight", "Others"))
+#
+Q17=demographic00$Q17
+poli.affil=cut(Q17, breaks=c(0,3,4,7,99), labels=c("Republican", "Independent", "Democrat", "Other"))
+#
+Q18=demographic00$Q18
+sw.program=cut(Q18, breaks=c(0,1,2,99),labels=c("1", "2", "Undefined"))
+#
+Q19=demographic00$Q19
+grp.urb=cut(Q19, breaks=c(0,1,2,3), labels=c("Urban", "Rural", "Suburban/small town"))
+#
+Q.20=demographic00$Q20
+spirituality=rep("high", length(Q.20))
+spirituality[which(Q.20==2)]="moderate"
+spirituality[Q.20 %in% c(1,2,3)]="low"
+#
+new.demographics=data.frame(grp.age, grp.edu, grp.empl, kid.num, home.size, 
+                            grp.gender, grp.race,
+                            mari.st, grp.dsb, grp.reli, sex.orient, poli.affil,
+                            sw.program, grp.urb, 
+           spirituality)
+#new.demographics
+```
+
+```{r}
+SC <- prcomp(compassion, center = TRUE, scale = TRUE)
+kable(round(SC$rotation,2), caption="Factor Loadings of the PCA")
+
+```
+
+```{r}
+kable(summary(SC)$importance, caption="The importance of each principal component")
+```
+
+```{r}
+GR <- prcomp(gratitude, center = TRUE, scale = TRUE)
+kable(round(GR$rotation,2), caption="Factor Loadings of the PCA")
+
+```
+
+```{r}
+kable(summary(GR)$importance, caption="The importance of each principal component")
+```
