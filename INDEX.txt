@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html>
+<!-- open html tag: required  -->
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <!-- open page header: required -->
+  <title>Boning Liu's First Web Page</title> <!-- page title appears on the tab -->
+</head> <!-- close page header: required -->
+
+<body>
+  <!-- open html body: required -->
+  <!-- All contents of the web page MUST be placed between <body> </body> -->
+  <center>
+    <h1>
+      <font color="darkblue"> Welcome to Boning Liu's Web Page</font>
+    </h1>
+  </center>
+  <br>
+  <center><img src="img/wculogo.png" alt="wculogo" width="318" height="158"></center>
+  <br>
+  <center>
+    <font color="navy" face="Helvetica" size=" 4">
+      <a href="https://www.wcupa.edu/" target="_blank">West Chester University Homepage</a>
+    </font>
+  </center>
+  <br>
+  <!-- contact information  -->
+  <center>
+    <font color="navy" face="Helvetica" size=" 4">
+      Phone: 267-674-8241 <br>
+      Email: BL966858@wcupa.edu
+    </font>
+  </center>
+
+
+  <br>
+  <br>
+  <table border="0" bordercolor="darkgreen" bgcolor="#f6f6f6" width="70%" align="center">
+    <tbody>
+      <tr>
+        <td>
+          <h3>
+            <font color="darkred">Short Bio</font>
+          </h3>
+        </td>
+        <td>
+          <font color="navy" face="Times New Roman" size=" 4">
+            <p>My name is Boning Liu. I am 26 years old. I am from Beijing China. <br>
+              <br>I am currently a senior undergraduate majoring in statistics.
+            </p>
+          </font>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <h3>
+            <font color="darkred">Experience</font>
+          </h3>
+        </td>
+        <td>
+          <font color="navy" face="Times New Roman" size="4">
+            <p> Daimler Greater China Ltd. February 2019 - May 2019<br>
+              <br>Intern for Data-gathering in the External Affairs Department
+            </p>
+          </font>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <h3>
+            <font color="darkred">Projects</font>
+          </h3>
+        </td>
+        <td>
+          <font color="navy" face="Times New Roman" size="4">
+            <li>Project: <a href="files/Boning Liu JRA Poster.pdf" target="_blank"> JRA Survey Project</a></li><br>
+              <br><li>Project: <a href="files/Boning Liu - Assignment 2.html" target="_blank"> Assignment 2</a></li>
+              <br><li>Project: <a href="files/Boning Liu Sampling Plans Report.html" target="_blank"> Sampling Plans Report</a></li>
+              <br><li>Project: <a href="files/Boning-Liu-Presentation-2.html" target="_blank"> Sampling Plans Presentation</a></li>
+              <br><li>Project: <a href="files/Survey Analysis Report.html" target="_blank"> Suvrey Analysis Report</a></li>
+              <br><li>Project: <a href="files/枪手莎弥拉阵容攻略.html" target="_blank"> 枪手莎弥拉阵容攻略</a></li>
+          </font>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <h3>
+            <font color="darkred">Skills</font>
+          </h3>
+        </td>
+        <td>
+          <font color="navy" face="Times New Roman" size="4">
+            <p> MS Office, Photoshop</p>
+          </font>
+        </td>
+      </tr>
+
+
+
+    </tbody>
+  </table>
+
+  <!-- close html body: required -->
+</body>
+
+</html>
