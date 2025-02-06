@@ -1,0 +1,469 @@
+---
+title: 'Who Survived the Titanic? A Data-Driven Investigation'
+author: " Boning Liu"
+date: "02-05-2025 "
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: yes
+    theme: lumen
+  word_document: 
+    toc: yes
+    toc_depth: 4
+    fig_caption: yes
+    keep_md: yes
+  pdf_document: 
+    toc: yes
+    toc_depth: 4
+    fig_caption: yes
+    number_sections: yes
+    fig_width: 3
+    fig_height: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+```{=html}
+
+<style type="text/css">
+
+/* Cascading Style Sheets (CSS) is a stylesheet language used to describe the presentation of a document written in HTML or XML. it is a simple mechanism for adding style (e.g., fonts, colors, spacing) to Web documents. */
+
+h1.title {  /* Title - font specifications of the report title */
+  font-size: 24px;
+  font-weight: bold;
+  color: DarkRed;
+  text-align: center;
+  font-family: "Gill Sans", sans-serif;
+}
+h4.author { /* Header 4 - font specifications for authors  */
+  font-size: 18px;
+  font-family: system-ui;
+  color: red;
+  text-align: center;
+}
+h4.date { /* Header 4 - font specifications for the date  */
+  font-size: 18px;
+  font-family: system-ui;
+  color: DarkBlue;
+  text-align: center;
+  font-weight: bold;
+}
+h1 { /* Header 1 - font specifications for level 1 section title  */
+    font-size: 22px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: center;
+    font-weight: bold;
+}
+h2 { /* Header 2 - font specifications for level 2 section title */
+    font-size: 20px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+    font-weight: bold;
+}
+
+h3 { /* Header 3 - font specifications of level 3 section title  */
+    font-size: 18px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+}
+
+h4 { /* Header 4 - font specifications of level 4 section title  */
+    font-size: 18px;
+    font-family: "Times New Roman", Times, serif;
+    color: darkred;
+    text-align: left;
+}
+
+body { background-color:white; }
+
+.highlightme { background-color:yellow; }
+
+p { background-color:white; }
+
+</style>
+```
+
+```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+if (!require("knitr")) {
+   install.packages("knitr")
+   library(knitr)
+}
+if (!require("tidyverse")) {
+   install.packages("tidyverse")
+library(tidyverse)
+}
+if (!require("GGally")) {
+   install.packages("GGally")
+library(GGally)
+}
+knitr::opts_chunk$set(echo = TRUE,       # include code chunk in the output file
+                      warning = FALSE,   # sometimes, you code may produce warning messages,
+                                         # you can choose to include the warning messages in
+                                         # the output file. 
+                      results = TRUE,    # you can also decide whether to include the output
+                                         # in the output file.
+                      message = FALSE,
+                      comment = NA
+                      )  
+```
+```{r, echo=FALSE}
+### Loading the required libraries
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+```{r, include=TRUE}
+# Import the Titanic dataset from GitHub
+url <- "https://raw.githubusercontent.com/BrianL0201/BrianL0201.github.io/refs/heads/main/STA552%20Machine%20Learning/train.csv"
+titanic_data <- read.csv(url)
+```
+
+# Introduction
+
+## Description of Data
+
+This project uses the Titanic dataset, which provides details about passengers aboard the RMS Titanic during its infamous maiden voyage. The dataset is commonly used in machine learning projects for classification tasks, particularly predicting survival outcomes based on passenger features.
+
+### Purpose of Data Collection
+
+The Titanic dataset was initially collected to document passenger information such as demographics, ticket details, and survival status after the ship’s sinking. In this context, it serves as a valuable dataset for exploring supervised learning techniques and feature engineering for predictive modeling.
+
+### Description of the Data Collection Process
+
+The dataset originates from historical passenger records maintained by the White Star Line and other sources. 
+
+### Sample Size and Feature Variables
+
+- Sample Size: 891 observations
+- Number of Feature Variables: 12 variables
+
+### Feature Variables
+
+- **PassengerId**: Unique identifier for passengers (**Numerical**)
+- **Survived**: Survival status (0 = No, 1 = Yes) (**Categorical, Binary**)
+- **Pclass**: Passenger class (1, 2, or 3) (**Categorical**)
+- **Name**: Passenger's name (**Text**)
+- **Sex**: Passenger's gender (**Categorical**)
+- **Age**: Passenger's age in years (**Numerical**)
+- **SibSp**: Number of siblings/spouses aboard (**Numerical**)
+- **Parch**: Number of parents/children aboard (**Numerical**)
+- **Ticket**: Ticket number (**Text**)
+- **Fare**: Fare paid for the ticket (**Numerical**)
+- **Cabin**: Cabin number (**Text**)
+- **Embarked**: Port of embarkation (C = Cherbourg, Q = Queenstown, S = Southampton) (**Categorical**)
+
+## Purposes of Using This Dataset
+
+### The dataset will be used for:
+
+- Visual exploratory data analysis (EDA)
+- Feature engineering tasks to handle missing values
+- Exploring relationships between variables for machine learning preparation
+
+### Problem Statements
+
+- What factors influence a passenger’s survival during the Titanic disaster?
+- How can missing data be addressed to enhance model accuracy?
+- What are the relationships between key variables such as class, gender, and survival rate?
+
+# Distribution of Individual Features
+
+This section explores the distribution of individual features in the Titanic dataset to gain insights into patterns, trends, and potential anomalies. Particular attention is given to features requiring pre-processing steps, such as handling missing values, outliers, or transformations that may impact future machine learning workflows.
+
+## Handling Missing Values
+```{r, include=TRUE}
+# Replace blank entries with NA across all columns
+titanic_data[titanic_data == ""] <- NA
+
+colSums(is.na(titanic_data))
+```
+
+```{r, include=TRUE}
+# Handle Age missing values by imputing with median
+titanic_data$Age[is.na(titanic_data$Age)] <- median(titanic_data$Age, na.rm = TRUE)
+
+# Handle Cabin missing values by creating a binary variable
+titanic_data$HasCabin <- ifelse(is.na(titanic_data$Cabin), 0, 1)
+
+# Handle Embarked missing values by imputing with the mode
+mode_embarked <- names(sort(table(titanic_data$Embarked), decreasing = TRUE))[1]
+titanic_data$Embarked[is.na(titanic_data$Embarked)] <- mode_embarked
+
+# Confirm imputation
+colSums(is.na(titanic_data))
+```
+
+To address missing values in the Titanic dataset, we employed a structured approach to ensure data integrity for subsequent analysis. 
+
+- First, we identified missing values in the **Age**, **Cabin**, and **Embarked** features. The **Age** feature had 177 missing entries, which were imputed using the median age of the dataset to maintain stability against potential outliers. 
+
+- For the **Embarked** feature, which had 2 missing entries, we replaced the missing values with the most frequently occurring port (**Southampton**). 
+
+- The **Cabin** feature had a significant number of missing values (687), likely indicating passengers without assigned cabins. Rather than impute arbitrary values, we created a new binary feature **HasCabin** to indicate whether a passenger had a recorded cabin (1) or not (0). This transformation preserved important information about passenger class distinctions without introducing artificial data.
+
+## Visualizing Numerical Features
+
+### Distribution of Age
+```{r, include=TRUE}
+library(ggplot2)
+# Age Distribution Histogram
+ggplot(titanic_data, aes(x = Age)) +
+  geom_histogram(binwidth = 5, color = "black", fill = "skyblue") +
+  labs(title = "Distribution of Age", x = "Age", y = "Count") +
+  theme_minimal()
+
+```
+
+- **Observations**:
+The histogram shows a right-skewed distribution, with most passengers concentrated between ages 20 to 40.
+There is a sharp peak around age 30, likely due to median imputation for missing values.
+Some younger and older passengers (0–10 and 60+) are present but in smaller numbers.
+
+- **Implications**:
+The peak at 30 years old suggests that a large portion of missing values was imputed using the median.
+The presence of younger passengers aligns with families traveling together.
+The skewness might impact machine learning models, and transformations (such as scaling or binning into age groups) might help.
+
+- **Analytical Actions**:
+Consider binning Age into categories (e.g., child, young adult, middle-aged, senior).
+Examine survival rates by age groups to determine predictive power.
+Check for differences in age distribution across passenger classes.
+
+### Distribution of Fare
+```{r, include=TRUE}
+# Fare Distribution Boxplot
+ggplot(titanic_data, aes(y = Fare)) +
+  geom_boxplot(fill = "lightgreen", color = "black") +
+  labs(title = "Distribution of Fare", y = "Fare") +
+  theme_minimal()
+```
+
+- **Observations**:
+The boxplot shows several extreme outliers in ticket fares, with values exceeding 500.
+The majority of fares are concentrated near 0–100, with a thick lower portion of the box.
+The extreme outliers represent first-class passengers or those who paid for premium cabins.
+
+- **Implications**:
+The wide range of fares suggests significant economic disparity among passengers.
+Outliers could disproportionately influence model training if not handled appropriately.
+Most passengers traveled at lower fares, potentially corresponding to third-class tickets.
+
+- **Analytical Actions**:
+Consider applying a log transformation to normalize the distribution.
+Investigate survival rates by fare range to see if higher fares correspond to higher survival chances.
+Identify if outliers belong to a specific passenger class.
+
+## Visualizing Categorical Features
+
+### Passenger Class Distribution
+```{r, include=TRUE}
+# Passenger Class Bar Plot
+ggplot(titanic_data, aes(x = factor(Pclass))) +
+  geom_bar(fill = "coral") +
+  labs(title = "Passenger Class Distribution", x = "Class", y = "Count") +
+  theme_minimal()
+```
+
+- **Observations**:
+The largest group of passengers (~500) belonged to 3rd class, while 1st and 2nd class had similar but much smaller distributions (~200 each).
+This confirms a major economic disparity on board.
+
+- **Implications**:
+3rd-class passengers may have faced higher fatality rates, given poorer access to lifeboats and accommodations.
+Ticket pricing and affordability played a major role in class selection.
+
+- **Analytical Actions**:
+Compare survival rates across passenger classes.
+Investigate interactions between class, gender, and survival rates.
+
+### Embarkation Port Distribution
+```{r, include=TRUE}
+# Embarked Locations Bar Plot
+ggplot(titanic_data, aes(x = factor(Embarked))) +
+  geom_bar(fill = "gold") +
+  labs(title = "Embarkation Port Distribution", x = "Port", y = "Count") +
+  theme_minimal()
+```
+
+- **Observations**:
+The majority of passengers (over 600) embarked from Southampton (S).
+Cherbourg (C) had significantly fewer passengers.
+Queenstown (Q) had the least number of passengers.
+
+- **Implications**:
+Since Southampton had the highest number of passengers, it may represent a lower economic class due to ticket pricing differences at ports.
+The survival rate could vary based on the port of embarkation, so this is worth investigating in later analyses.
+
+- **Analytical Actions**:
+Compare survival rates by embarkation port to identify potential patterns.
+Check if port of embarkation correlates with passenger class.
+
+### Gender Distribution
+```{r, include=TRUE}
+# Gender Bar Plot
+ggplot(titanic_data, aes(x = factor(Sex))) +
+  geom_bar(fill = "purple") +
+  labs(title = "Gender Distribution", x = "Gender", y = "Count") +
+  theme_minimal()
+```
+
+- **Observations**:
+There are significantly more male passengers (~600) than female passengers (~300).
+The ratio is roughly 2:1 male-to-female.
+
+- **Implications**:
+The imbalance in gender distribution suggests that survival rates may differ based on gender.
+The "women and children first" policy during the Titanic disaster could result in higher survival rates for females.
+
+- **Analytical Actions**:
+Examine survival rates by gender to validate if females had a survival advantage.
+Investigate gender distribution across passenger classes.
+
+# Relationship Between Features
+
+This section explores the relationships between key features in the Titanic dataset to identify potential dependencies and interactions. The goal is to assess how different variables relate to each other, particularly their impact on survival outcomes.
+
+## Relationship Between Two Numerical Features (Scatter Plot)
+
+```{r, include=TRUE}
+ggplot(titanic_data, aes(x = Age, y = Fare)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  labs(title = "Relationship Between Age and Fare", x = "Age", y = "Fare") +
+  theme_minimal()
+```
+
+- **Observations**:
+Most passengers paid lower fares, with a dense cluster near 0–100 on the fare axis.
+There are several extreme outliers, with a few passengers paying over $500.
+There is no strong correlation between Age and Fare—passengers of all ages paid a wide range of fares.
+A few younger and middle-aged passengers seem to have paid significantly more than others.
+
+- **Implications**:
+Wealthier individuals (who paid higher fares) may have had better access to first-class cabins.
+The lack of correlation suggests that fare was more dependent on passenger class rather than age.
+The extreme outliers may skew model predictions, meaning a log transformation on Fare could be beneficial.
+
+- **Analytical Actions**:
+Check if higher-paying passengers had higher survival rates.
+Investigate which ticket class these high-fare passengers belonged to.
+Consider log-transforming Fare to handle skewness in future modeling.
+
+
+## Relationship Between Two Categorical Features (Stacked Bar Chart)
+
+```{r, include=TRUE}
+ggplot(titanic_data, aes(x = factor(Pclass), fill = factor(Survived))) +
+  geom_bar(position = "fill") + 
+  labs(title = "Survival Rate by Passenger Class", x = "Passenger Class", y = "Proportion") +
+  scale_fill_manual(values = c("red", "green"), name = "Survived", labels = c("No", "Yes")) +
+  theme_minimal()
+```
+
+- **Observations**:
+
+  - First-class (Pclass = 1):
+    - Highest survival rate (~60% survived).
+    - A smaller proportion of fatalities compared to other classes.
+
+  - Second-class (Pclass = 2):
+    - Moderate survival rate (~45% survived).
+    - Still a significant number of fatalities, but survival chances were better than third class.
+    
+  - Third-class (Pclass = 3):
+    - Lowest survival rate (~25% survived).
+    - The majority of third-class passengers did not survive.
+    
+- **Implications**:
+  - Passenger class strongly influenced survival chances, with higher-class passengers having better survival rates.
+  - First-class passengers likely had better access to lifeboats.
+  - Third-class passengers faced higher fatality rates, possibly due to lower priority in the evacuation process.
+
+- **Analytical Actions**:
+  - Compare gender survival rates across passenger classes to see if first-class women had an advantage.
+  - Check if fare amount correlates with survival, since it aligns with class.
+  - Investigate age distribution across classes to see if younger passengers in lower classes were affected differently.
+  
+
+## Relationship Between One Numerical and One Categorical Feature (Boxplot)
+
+```{r, include=TRUE}
+ggplot(titanic_data, aes(x = factor(Survived), y = Fare)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Fare Distribution by Survival", x = "Survived (0 = No, 1 = Yes)", y = "Fare") +
+  theme_minimal()
+```
+
+- **Observations**:
+  - Higher median fares for those who survived (1), compared to those who did not (0).
+  - Survivors had a wider interquartile range (IQR) for fare values, indicating more variability.
+  - Numerous outliers exist in both groups, but survivors had a higher number of extreme fares (including some exceeding $500).
+  - Passengers who paid lower fares had a higher likelihood of not surviving.
+
+- **Implications**:
+  - Fare strongly influences survival chances, likely due to the link between fare price and passenger class.
+  - Wealthier passengers who paid higher fares were likely in first-class, where survival rates were higher.
+  - Many lower-fare passengers (~$0–$50 range) had a higher concentration in the "not survived" group.
+  
+- **Analytical Actions**:
+  - Compare this distribution by passenger class to confirm that first-class passengers paid higher fares and had higher survival rates.
+  - Consider log-transforming the Fare variable to better handle skewness in machine learning models.
+  - Explore fare distribution by gender to see if wealthier female passengers had a survival advantage.
+
+## Exploring a Three-Way Relationship
+
+```{r, include=TRUE}
+ggplot(titanic_data, aes(x = factor(Pclass), fill = factor(Survived))) +
+  geom_bar(position = "fill") +
+  facet_wrap(~ Sex) +
+  labs(title = "Survival Rate by Passenger Class and Gender", x = "Passenger Class", y = "Proportion") +
+  scale_fill_manual(values = c("red", "green"), name = "Survived", labels = c("No", "Yes")) +
+  theme_minimal()
+```
+
+- **Observations**:
+
+  - Females had significantly higher survival rates across all passenger classes.
+    - Nearly 100% of first-class females survived.
+    - Second-class females also had high survival rates, but slightly lower than first-class.
+    - Third-class females had lower survival rates compared to first- and second-class, but still much higher than males.
+
+  - Males had drastically lower survival rates, especially in second and third class.
+    - First-class males had the best survival rate among men, but still much lower than first-class females.
+    - Second- and third-class males had extremely low survival rates, with third-class males faring the worst.
+
+- **Implications**:
+  - The "women and children first" policy is evident, as females across all classes had a survival advantage.
+  - First-class women had nearly guaranteed survival, suggesting preferential access to lifeboats.
+  - Third-class males had the highest fatality rates, likely due to lower access to lifeboats and lower social standing.
+
+- **Analytical Actions**:
+  - Compare survival within each gender group (e.g., first-class vs. third-class females).
+  - Investigate whether age played a role in survival rates for males—were younger males prioritized over older ones?
+  - Consider gender as a strong predictive feature for machine learning models.
+
+# Conclusion
+
+This exploratory data analysis of the Titanic dataset revealed several key insights regarding survival patterns among passengers. Passenger class, gender, and fare price were strongly associated with survival rates.
+
+- Passenger Class Influence: First-class passengers had significantly higher survival rates than second- and third-class passengers, highlighting disparities in evacuation priority.
+
+- Gender Disparity: Female passengers had much higher survival rates than males, confirming the impact of the "women and children first" policy.
+
+- Fare and Survival: Higher fares were associated with better survival outcomes, reinforcing the link between social class and access to lifeboats.
+
+- Limited Age Correlation: No strong direct relationship was found between age and fare, suggesting that ticket pricing was primarily driven by class rather than age.
+
+These findings provide a strong foundation for further machine learning modeling, where feature engineering and predictive algorithms can be used to refine survival predictions.
